@@ -1,0 +1,50 @@
+version: '3'
+services:
+  server:
+    build: 
+          context: ./environment/apache/
+          dockerfile: apache-dockerfile
+          args:
+              uid: 1000
+    container_name: apache-server
+    environment:
+          - APACHE_RUN_USER=#1000
+          - APACHE_RUN_GROUP=#1000
+    restart: always
+    ports:
+    - '8080:80'
+    volumes:
+    -   ./:/var/www/html/
+    -   ./environment/apache/000-default.conf/:/etc/apache2/sites-available/000-default.conf
+  database:
+    image: mysql:8.0
+    container_name: mysql-database
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./environment/mysql/:/tmp/database
+    command: mysqld --init-file="/tmp/database/install_db.sql"
+    restart: unless-stopped
+  database-management:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    depends_on:
+      - database
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      PMA_USER: root
+      PMA_HOST: database
+      PMA_PORT: 3306
+      PMA_PASSWORD: root
+    restart: unless-stopped
+    ports:
+      - 8082:80
+volumes:
+  dbdata:
+
+  

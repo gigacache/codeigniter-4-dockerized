@@ -1,0 +1,16 @@
+FROM php:8.1-apache
+RUN apt-get -y update \
+&& apt-get install -y libicu-dev \
+&& docker-php-ext-configure intl \
+&& docker-php-ext-install intl \
+&& docker-php-ext-install mysqli \
+&& docker-php-ext-enable mysqli
+
+ARG uid
+RUN useradd -G www-data,root -u $uid -d /home/devuser devuser
+RUN mkdir -p /home/devuser/.composer && \
+    chown -R devuser:devuser /home/devuser
+
+EXPOSE 80
+
+RUN apachectl restart
